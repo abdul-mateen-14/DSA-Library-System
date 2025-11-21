@@ -1,19 +1,31 @@
 FROM debian:bookworm
 
+# Install all dependencies Crow needs
 RUN apt-get update && \
-    apt-get install -y g++ cmake make sqlite3 libsqlite3-dev wget git
+    apt-get install -y \
+        g++ \
+        cmake \
+        make \
+        sqlite3 \
+        libsqlite3-dev \
+        libboost-all-dev \
+        libasio-dev \
+        libssl-dev \
+        git \
+        wget
 
-# Install standalone ASIO
-RUN wget https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-28-1.tar.gz && \
-    tar -xvzf asio-1-28-1.tar.gz && \
-    mv asio-asio-1-28-1/include/asio /usr/include/asio
-
+# Create app directory
 WORKDIR /app
+
+# Copy all files into container
 COPY . .
 
+# Configure and build the project using CMake
 RUN cmake -B build
 RUN cmake --build build --config Release
 
+# Railway automatically assigns a port. (Expose for clarity)
 EXPOSE 8080
 
+# Start the server
 CMD ["./build/library_server"]
